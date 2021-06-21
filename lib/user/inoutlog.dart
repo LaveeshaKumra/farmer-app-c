@@ -73,6 +73,7 @@ class _ClockInClockOutLogState extends State<ClockInClockOutLog> {
             return GroupedListView(
                 elements: snapshot.data.docs,
                 groupBy: (element) => _convertdate(element['in_time'].toDate()),
+                order: GroupedListOrder.DESC,
                 groupHeaderBuilder: (element) => Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Center(

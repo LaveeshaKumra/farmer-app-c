@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.farmersapp.farmer_app2">
+    package="org.rompin.smartapp">
     <uses-permission android:name="android.permission.INTERNET" />
 
    <application

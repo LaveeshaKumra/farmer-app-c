@@ -264,7 +264,7 @@ class _TaskDetailsState extends State<TaskDetailsInfarmer> {
               ),
               floatingActionButton: FloatingActionButton.extended(
                 icon: snapshot.data['status']=="Done"?Icon(Icons.done):Icon(Icons.priority_high_rounded),
-                label: snapshot.data['status']!="Done"?Text("Set Satus"):Text("Done"),
+                label: snapshot.data['status']!="Done"?Text("set status"):Text("Done"),
                 onPressed: (){
                   if(snapshot.data['status']!="Done"){
                     if(snapshot.data['status']=="Pending") _ifinpending(docid,snapshot.data['title'],snapshot.data['company']);
