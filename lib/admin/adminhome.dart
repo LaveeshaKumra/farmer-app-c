@@ -255,7 +255,9 @@ class _AdminPageState extends State<AdminPage> {
                                 child: ListTile(
                                   trailing: document.data()['status']=="Done"?Icon(Icons.check_circle,color: Colors.green,):Icon(Icons.warning,color: Colors.yellow,),
                                   title: document.data()['title']==null?Text(''):Text(document.data()['title']),
-                                  subtitle: Text("From ${_convertdate(document.data()['start_date'].toDate())} to ${_convertdate(document.data()['end_date'].toDate())}"),
+                                  subtitle: _convertdate(document.data()['start_date'].toDate())==_convertdate(document.data()['end_date'].toDate())?
+                                  Text("From ${_convertdate(document.data()['start_date'].toDate())}"):
+                                  Text("From ${_convertdate(document.data()['start_date'].toDate())} to ${_convertdate(document.data()['end_date'].toDate())}"),
                                 ),
                                 onTap: () {
                                   Navigator.push(

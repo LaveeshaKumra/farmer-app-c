@@ -2,6 +2,7 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toast/toast.dart';
 import 'package:intl/intl.dart';
 import 'package:searchable_dropdown/searchable_dropdown.dart';
@@ -38,7 +39,7 @@ class _AddTaskState extends State<AddTask> {
     DateTime newSelectedDate = await showDatePicker(
         context: context,
         initialDate: _startdate != null ? _startdate : DateTime.now(),
-        firstDate: DateTime(1970),
+        firstDate: DateTime(DateTime.now().day),
         lastDate: DateTime(DateTime.now().year+1),
         builder: (BuildContext context, Widget child) {
           return Theme(
@@ -215,7 +216,10 @@ var allnames,allemails;
   TimeOfDay _starttime = TimeOfDay(hour: 8, minute: 0);
   TimeOfDay _endtime = TimeOfDay(hour: 18, minute: 0);
   bool _startcolor=false;bool _endcolor=false;
-
+  TimeOfDay stringToTimeOfDay(String tod) {
+    final format = DateFormat.jm(); //"6:00 AM"
+    return TimeOfDay.fromDateTime(format.parse(tod));
+  }
   void _selectstartingtime() async {
     final TimeOfDay newTime = await showTimePicker(
       context: context,
@@ -243,13 +247,45 @@ var allnames,allemails;
     }
   }
 
+  _pastetask() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    Map json = jsonDecode(pref.getString('copy'));
 
+    print(json['title']);
+    _title.text=json['title'];
+    _description.text=(json['description']);
+    _textEditingController..text = DateFormat.yMMMd().format(DateTime.parse(json['start_date']));
+    _textEditingController2..text = DateFormat.yMMMd().format(DateTime.parse(json['end_date']));
+    setState(() {
+      _starttime=stringToTimeOfDay(json['start_time']);
+      _startcolor=true;
+    });
+    setState(() {
+      _endtime=stringToTimeOfDay(json['end_time']);
+      _endcolor=true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("Add Tasks"),
+        actions: [
+          InkWell(child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Icon(Icons.paste),
+          ),onTap: () async {
+            SharedPreferences pref = await SharedPreferences.getInstance();
+            if(pref.getString('copy')!=null &&pref.getString('copy')!='')
+            Toast.show("Task Pasted !", context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+            else{
+              Toast.show("No Task copied", context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+            }
+            //_pastetask();
+          },),
+
+        ],
       ),
       body: Form(
         key: _formKey,
@@ -598,5 +634,42 @@ class RoundedButton2 extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class TaskModel {
+  String title;
+  String description;
+  String startDate;
+  String endDate;
+  String startTime;
+  String endTime;
+
+  TaskModel(
+      {this.title,
+        this.description,
+        this.startDate,
+        this.endDate,
+        this.startTime,
+        this.endTime});
+
+  TaskModel.fromJson(Map<String, dynamic> json) {
+    title = json['title'];
+    description = json['description'];
+    startDate = json['start_date'];
+    endDate = json['end_date'];
+    startTime = json['start_time'];
+    endTime = json['end_time'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['title'] = this.title;
+    data['description'] = this.description;
+    data['start_date'] = this.startDate;
+    data['end_date'] = this.endDate;
+    data['start_time'] = this.startTime;
+    data['end_time'] = this.endTime;
+    return data;
   }
 }

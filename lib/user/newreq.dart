@@ -51,12 +51,26 @@ var noleaves=false;
       },
     )..show();
   }
+  _showdialog2(str) {
+    return AwesomeDialog(
+      context: context,
+      dialogType: DialogType.WARNING,
+      animType: AnimType.TOPSLIDE,
+      title: 'Request Denied',
+      desc: 'You have already applied leaves for $str',
+      //showCloseIcon: true,
+      // btnCancelOnPress: () {},
+      btnOkOnPress: () {
+        // Navigator.pop(context);
+      },
+    )..show();
+  }
 
   _selectDate(BuildContext context) async {
     DateTime newSelectedDate = await showDatePicker(
         context: context,
         initialDate: _startdate != null ? _startdate : DateTime.now(),
-        firstDate: DateTime(1970),
+        firstDate:DateTime(DateTime.now().year - 1),
         lastDate: DateTime(DateTime.now().year + 1),
         builder: (BuildContext context, Widget child) {
           return Theme(
@@ -91,7 +105,7 @@ var noleaves=false;
     DateTime newSelectedDate = await showDatePicker(
         context: context,
         initialDate: _enddate != null ? _enddate : DateTime.now(),
-        firstDate: DateTime(1970),
+        firstDate:DateTime(DateTime.now().year - 1),
         lastDate: DateTime(DateTime.now().year + 1),
         builder: (BuildContext context, Widget child) {
           return Theme(
@@ -169,24 +183,72 @@ var noleaves=false;
     });
 
     final databaseReference = FirebaseFirestore.instance;
-    await databaseReference.collection("timeoff").add({
-      'email': email,
-      'title': _title.text,
-      'description': _description.text,
-      'company': company,
-      'username': name,
-      "end_date": _enddate,
-      "start_date": _startdate,
-      "status": "Pending",
-      "leavetype":_type
-    }).then((value) async {
-      _sendnotification();
-      setState(() {
-        _progress = false;
-      });
+    var date_array=[],leave_array=[],common_dates=[];
+    databaseReference
+        .collection("timeoff")
+        .where('email', isEqualTo: email).get().then((value) async {
+          for(int i=0;i<value.docs.length;i++){
+            DateTime sd=DateTime(value.docs[i]['start_date'].toDate().year,value.docs[i]['start_date'].toDate().month,value.docs[i]['start_date'].toDate().day,0,0,0,0);
+            DateTime ed=DateTime(value.docs[i]['end_date'].toDate().year,value.docs[i]['end_date'].toDate().month,value.docs[i]['end_date'].toDate().day+1,0,0,0,0);
+            while(ed.isAfter(sd)){
+              date_array.add(sd);
+              sd=sd.add(Duration(days: 1));
+            }
+          }
+          DateTime sd1=DateTime(_startdate.year,_startdate.month,_startdate.day,0,0,0,0);
+          DateTime ed1=DateTime(_enddate.year,_enddate.month,_enddate.day+1,0,0,0,0);
+          while(ed1.isAfter(sd1)){
+            leave_array.add(sd1);
+            sd1=sd1.add(Duration(days: 1));
+          }
 
-      _showdialog();
+          if (date_array.length > 0 && leave_array.length > 0) {
+            Set<DateTime> firstSet = new Set<DateTime>();
+            for (int i = 0; i < date_array.length; i++) {
+              firstSet.add(date_array[i]);
+            }
+
+            // Iterate the elements of the arr2
+            for (int j = 0; j < leave_array.length; j++) {
+              if (firstSet.contains(leave_array[j])) {
+                common_dates.add(leave_array[j]);
+              }
+            }
+          }
+          if(common_dates.length>0){
+            var f= DateFormat('dd MMMM yy');
+            var str='';
+            for(int i=0;i<common_dates.length;i++){
+              str=str+'\n'+f.format(common_dates[i]);
+            }
+            _showdialog2(str);
+
+          }
+          else{
+              await databaseReference.collection("timeoff").add({
+                'email': email,
+                'title': _title.text,
+                'description': _description.text,
+                'company': company,
+                'username': name,
+                "end_date": _enddate,
+                "start_date": _startdate,
+                "status": "Pending",
+                "leavetype":_type
+              }).then((value) async {
+                _sendnotification();
+                setState(() {
+                  _progress = false;
+                });
+
+                _showdialog();
+              });
+
+          }
+
     });
+
+
   }
 
   @override
@@ -319,7 +381,7 @@ var noleaves=false;
                                       );
                                     }
                                     if (leaves == 0) {
-                                      numberofleaves=int.parse(map[_type]);
+                                      numberofleaves=int.parse(map[_type])-1;
                                       return Column(
                                         children: [
                                           Text(

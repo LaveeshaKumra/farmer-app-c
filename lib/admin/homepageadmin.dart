@@ -38,7 +38,7 @@ class _HomePageAdminState extends State<HomePageAdmin> {
   }
 
   _convertdate(d) {
-    final DateFormat formatter = DateFormat('dd MMMM , yy');
+    final DateFormat formatter = DateFormat('dd MMM , yy');
     final String formatted = formatter.format(d);
     return formatted;
   }
@@ -220,10 +220,15 @@ class _HomePageAdminState extends State<HomePageAdmin> {
                                               Padding(
                                                 padding:
                                                     const EdgeInsets.all(8.0),
-                                                child: Text(
-                                                    "${_convertdate(document.data()['start_date'].toDate())} to ${_convertdate(document.data()['end_date'].toDate())}",
-                                                    style:
-                                                        TextStyle(fontSize: 16)),
+                                                child:
+                                                _convertdate(document.data()['start_date'].toDate())==_convertdate(document.data()['end_date'].toDate())?
+                                                Text("From ${_convertdate(document.data()['start_date'].toDate())}",style:
+                                                TextStyle(fontSize: 16)):
+                                                Text(
+                                                      "${_convertdate(document.data()['start_date'].toDate())} to ${_convertdate(document.data()['end_date'].toDate())}",
+                                                      style:
+                                                          TextStyle(fontSize: 16),
+                                                ),
                                               ),
                                             ],
                                           ),
@@ -441,11 +446,14 @@ class _HomePageAdminState extends State<HomePageAdmin> {
                                               Padding(
                                                 padding:
                                                     const EdgeInsets.all(8.0),
-                                                child: Text(
+                                                child:  _convertdate(document.data()['start_date'].toDate())==_convertdate(document.data()['end_date'].toDate())?
+                                                Text("From ${_convertdate(document.data()['start_date'].toDate())}",style:
+                                TextStyle(fontSize: 16)):
+                                                Text(
                                                     "${_convertdate(document.data()['start_date'].toDate())} to ${_convertdate(document.data()['end_date'].toDate())}",
                                                     style:
-                                                        TextStyle(fontSize: 16)),
-                                              ),
+                                                        TextStyle(fontSize: 16)),)
+                                              ,
                                             ],
                                           ),
                                           Row(
